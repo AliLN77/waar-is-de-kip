@@ -1,13 +1,11 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
-# ... بقیه import ها ...
 from advanced_ml import generate_30_day_forecast, generate_prescriptive_insights
 
 # 1. Page Configuration
 st.set_page_config(page_title="Waar is de kip! | Enterprise", layout="wide", page_icon="🐓")
 
-# 2. اینجا دقیقاً همان جایی است که باید استایل‌دهی را قرار دهی!
 st.markdown("""
     <style>
     .main { background-color: #F4F6F9; }
@@ -18,7 +16,6 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. بقیه کدهای منطقی برنامه و توابع (مثل load_telemetry_data و غیره)
 # ...
 COST_PER_CHICKEN = 0.05
 REVENUE_PER_EGG = 0.25
