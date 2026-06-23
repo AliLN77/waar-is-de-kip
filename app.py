@@ -112,7 +112,7 @@ def render_admin_dashboard():
     if len(date_range) == 2:
         farm_df = farm_df[(farm_df['date'] >= pd.to_datetime(date_range[0])) & (farm_df['date'] <= pd.to_datetime(date_range[1]))]
 
-    st.title(f"🐓 Enterprise BI: {selected_farm}")
+    st.title(f"🐓 Poultry Operations & AI Command Center: {selected_farm}")
     
     # Executive KPIs
     c1, c2, c3, c4 = st.columns(4)
