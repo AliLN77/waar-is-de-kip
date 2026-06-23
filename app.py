@@ -9,20 +9,9 @@ import plotly.graph_objects as go
 from advanced_ml import generate_30_day_forecast, generate_prescriptive_insights
 
 # 1. Page Configuration & CSS
-# این بخش را دقیقاً به همین شکل در ابتدای فایل جایگزین کن:
+st.set_page_config(page_title="Waar is de kip! | Enterprise", layout="wide", page_icon="🐓")
 st.markdown("""
     <style>
-    .main { background-color: #F4F6F9; }
-    .stMetric { background-color: #FFFFFF; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #0f172a; }
-    .crud-card { background-color: #FFFFFF; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 4px solid #3b82f6; }
-    .chart-container { background-color: #FFFFFF; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 10px; }
-    .stApp { max-width: 1400px; margin: 0 auto; }
-    </style>
-    """, unsafe_allow_html=True)
-    </style>
-    """, unsafe_allow_html=True)
-    </style>
-    """, unsafe_allow_html=True)
     .main { background-color: #F4F6F9; }
     .stMetric { background-color: #FFFFFF; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #0f172a; }
     .crud-card { background-color: #FFFFFF; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 4px solid #3b82f6; }
@@ -123,7 +112,7 @@ def render_admin_dashboard():
     if len(date_range) == 2:
         farm_df = farm_df[(farm_df['date'] >= pd.to_datetime(date_range[0])) & (farm_df['date'] <= pd.to_datetime(date_range[1]))]
 
-    st.title(f"🐓 Poultry Operations & AI Command Center: {selected_farm}")
+    st.title(f"🐓 Enterprise BI: {selected_farm}")
     
     # Executive KPIs
     c1, c2, c3, c4 = st.columns(4)
@@ -231,8 +220,6 @@ def main():
         render_consumer_passport(query_params["batch_id"])
     else:
         render_admin_dashboard()
-# Footer Section - Security & Integrity
-    st.divider()
-    st.caption("🔒 Powered by Predictive ML Pipeline | Confidential: Internal Use Only")
+
 if __name__ == "__main__":
     main()
