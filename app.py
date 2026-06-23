@@ -122,9 +122,6 @@ def render_admin_dashboard():
         date_range = st.date_input("Filter Range", [min_d, max_d], min_value=min_d, max_value=max_d)
         st.success("🟢 AI Engine: Active")
         st.divider)
-csv = farm_df.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Export Filtered Data (CSV)", data=csv, file_name='poultry_report.csv', mime='text/csv')
-
     st.subheader("📡 System Health")
     st.write("Database: ✅ Operational (12ms)")
     st.write("AI Pipeline: 🟢 Stable")
@@ -138,6 +135,9 @@ csv = farm_df.to_csv(index=False).encode('utf-8')
     
     # Executive KPIs
     c1, c2, c3, c4 = st.columns(4)
+
+csv = farm_df.to_csv(index=False).encode('utf-8')
+    st.download_button("📥 Export Filtered Data (CSV)", data=csv, file_name='poultry_report.csv', mime='text/csv')
     c1.metric("Total Yield (Eggs)", f"{farm_df['eggs_laid'].sum():,}")
     c2.metric("Gross Revenue", f"€{farm_df['revenue'].sum():,.2f}")
     c3.metric("Operational Cost", f"€{farm_df['cost'].sum():,.2f}")
