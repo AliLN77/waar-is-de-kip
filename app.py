@@ -120,12 +120,12 @@ def render_admin_dashboard():
         selected_farm = st.selectbox("📍 Target Farm", options=["All Farms"] + list(df['farm_name'].unique()))
         min_d, max_d = df['date'].min(), df['date'].max()
         date_range = st.date_input("Filter Range", [min_d, max_d], min_value=min_d, max_value=max_d)
-        st.success("🟢 AI Engine: Active")
         st.divider()
-    st.subheader("📡 System Health")
-    st.write("Database: ✅ Operational (12ms)")
-    st.write("AI Pipeline: 🟢 Stable")
-    st.write("API Latency: 45ms")
+        st.subheader("📡 System Health")
+        st.write("Database: ✅ Operational (12ms)")
+        st.write("AI Pipeline: 🟢 Stable")
+        st.write("API Latency: 45ms")
+        st.success("🟢 AI Engine: Active")
     farm_df = df if selected_farm == "All Farms" else df[df['farm_name'] == selected_farm]
     if len(date_range) == 2:
         farm_df = farm_df[(farm_df['date'] >= pd.to_datetime(date_range[0])) & (farm_df['date'] <= pd.to_datetime(date_range[1]))]
