@@ -126,7 +126,6 @@ def render_admin_dashboard():
     st.write("Database: ✅ Operational (12ms)")
     st.write("AI Pipeline: 🟢 Stable")
     st.write("API Latency: 45ms")
-
     farm_df = df if selected_farm == "All Farms" else df[df['farm_name'] == selected_farm]
     if len(date_range) == 2:
         farm_df = farm_df[(farm_df['date'] >= pd.to_datetime(date_range[0])) & (farm_df['date'] <= pd.to_datetime(date_range[1]))]
@@ -135,14 +134,13 @@ def render_admin_dashboard():
     
     # Executive KPIs
     c1, c2, c3, c4 = st.columns(4)
-
-csv = farm_df.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Export Filtered Data (CSV)", data=csv, file_name='poultry_report.csv', mime='text/csv')
     c1.metric("Total Yield (Eggs)", f"{farm_df['eggs_laid'].sum():,}")
     c2.metric("Gross Revenue", f"€{farm_df['revenue'].sum():,.2f}")
     c3.metric("Operational Cost", f"€{farm_df['cost'].sum():,.2f}")
     c4.metric("Net Profit (ROI)", f"€{farm_df['profit'].sum():,.2f}")
     st.divider()
+    csv = farm_df.to_csv(index=False).encode('utf-8')
+    st.download_button("📥 Export Filtered Data (CSV)", data=csv, file_name='poultry_report.csv', mime='text/csv')
 
     # The 3 Enterprise Tabs
     tab_dash, tab_crud, tab_ai = st.tabs(["📈 Visual Analytics", "🗄️ Farm Config & QR Codes", "🤖 AI Copilot"])
