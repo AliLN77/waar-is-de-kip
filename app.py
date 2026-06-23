@@ -8,22 +8,19 @@ import plotly.express as px
 import plotly.graph_objects as go
 from advanced_ml import generate_30_day_forecast, generate_prescriptive_insights
 
-# 1. Page Configuration
+# 1. Page Configuration & CSS
 st.set_page_config(page_title="Waar is de kip! | Enterprise", layout="wide", page_icon="🐓")
-
-# Global UI/UX Styling for High Data Density
 st.markdown("""
     <style>
     .main { background-color: #F4F6F9; }
     .stMetric { background-color: #FFFFFF; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #0f172a; }
     .crud-card { background-color: #FFFFFF; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 4px solid #3b82f6; }
-    .chart-container { background-color: #FFFFFF; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    /* Reduce top padding */
-    .block-container { padding-top: 2rem; padding-bottom: 2rem; }
+    .chart-container { background-color: #FFFFFF; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .chat-bubble { background-color: #e0f2fe; padding: 15px; border-radius: 10px; border-left: 5px solid #0284c7; margin-bottom: 10px; }
+    .passport-card { background-color: #f0fdf4; padding: 20px; border-radius: 15px; border: 2px solid #22c55e; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- Database & Cost Constants ---
 COST_PER_CHICKEN = 0.05
 REVENUE_PER_EGG = 0.25
 
@@ -45,86 +42,105 @@ def load_telemetry_data():
     if not df.empty:
         df['date'] = pd.to_datetime(df['date'])
         df['revenue'] = df['eggs_laid'] * REVENUE_PER_EGG
-        df['cost'] = COST_PER_CHICKEN * 500 # Approx 500 chickens per batch for calculation
+        df['cost'] = COST_PER_CHICKEN * 500 
         df['profit'] = df['revenue'] - df['cost']
     return df
 
-# --- Main App ---
-def main():
-    # Simple Auth
+# --- Dual Chatbot Logic ---
+def admin_copilot(query):
+    q = query.lower()
+    if "yield" in q or "drop" in q: return "SQL Insight: Yield variance correlates strongly with temperature drops below 19°C. Adjust HVAC."
+    if "breed" in q: return "Leghorn maximizes ROI in Geel (gas boiler), while Sussex is hardier for Lommel's Lucht-Lucht system."
+    return "I am your Operational Copilot. Ask about operations, yields, or HVAC optimizations."
+
+def consumer_assistant(query):
+    q = query.lower()
+    if "diet" in q or "food" in q: return "These chickens are fed a 100% Organic, Non-GMO Corn diet!"
+    if "free" in q or "range" in q: return "Yes! They enjoy a Free Range Class A+ lifestyle."
+    return "Hi! I'm Kipi 🐔. Ask me about animal welfare, diet, or farm origin."
+
+# --- View 1: Digital Passport (For Mobile QR) ---
+def render_consumer_passport(batch_id):
+    conn = get_db_connection()
+    batch = conn.execute("SELECT * FROM livestock_batches JOIN farms_profile ON livestock_batches.farm_id = farms_profile.farm_id WHERE batch_id = ?", (batch_id,)).fetchone()
+    conn.close()
+    if not batch:
+        st.error("Invalid Batch ID.")
+        return
+
+    st.markdown("<div class='passport-card'><h2>🌱 Digital Product Passport</h2><p>Verified Origin & Traceability</p></div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1: st.image("https://cdn-icons-png.flaticon.com/512/3014/3014420.png", width=150)
+    with col2:
+        st.write(f"**Origin:** {batch['farm_name']}")
+        st.write(f"**Breed:** {batch['breed']}")
+        st.write(f"**Diet:** {batch['diet_type']}")
+        st.write(f"**Welfare:** {batch['welfare_std']}")
+
+    st.divider()
+    st.subheader("🐔 Ask Kipi (Consumer Assistant)")
+    user_q = st.text_input("Ask about your food...")
+    if user_q: st.markdown(f"<div class='chat-bubble' style='border-color: #22c55e; background-color: #f0fdf4;'><b>Kipi:</b> {consumer_assistant(user_q)}</div>", unsafe_allow_html=True)
+
+# --- View 2: Enterprise Admin Dashboard ---
+def render_admin_dashboard():
     if 'logged_in' not in st.session_state: st.session_state.logged_in = False
     if not st.session_state.logged_in:
         st.title("🔒 Enterprise Login")
-        if st.button("Login (Bypass)"): 
-            st.session_state.logged_in = True
-            st.rerun()
+        pwd = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if pwd == "admin123":
+                st.session_state.logged_in = True
+                st.rerun()
+            else: st.error("Invalid Credentials")
         return
 
     df = load_telemetry_data()
     if df.empty:
-        st.error("Telemetry data unavailable. Run schema builder.")
+        st.error("Database empty. Please run schema_builder.py.")
         return
 
-    # --- Restore Sidebar Filters ---
+    # Global Filters in Sidebar
     with st.sidebar:
         st.title("⚙️ Global Controls")
         selected_farm = st.selectbox("📍 Target Farm", options=["All Farms"] + list(df['farm_name'].unique()))
-        
-        st.markdown("---")
-        st.markdown("📅 **Time Horizon**")
         min_d, max_d = df['date'].min(), df['date'].max()
         date_range = st.date_input("Filter Range", [min_d, max_d], min_value=min_d, max_value=max_d)
-        
-        st.markdown("---")
         st.success("🟢 AI Engine: Active")
 
-    # Apply Filters
     farm_df = df if selected_farm == "All Farms" else df[df['farm_name'] == selected_farm]
     if len(date_range) == 2:
         farm_df = farm_df[(farm_df['date'] >= pd.to_datetime(date_range[0])) & (farm_df['date'] <= pd.to_datetime(date_range[1]))]
 
-    st.title("🐓 Enterprise BI: Production & Analytics")
+    st.title(f"🐓 Enterprise BI: {selected_farm}")
     
-    # --- Top Level KPIs (Data Density Restored) ---
-    col1, col2, col3, col4 = st.columns(4)
-    total_yield = farm_df['eggs_laid'].sum()
-    total_rev = farm_df['revenue'].sum()
-    total_cost = farm_df['cost'].sum()
-    net_profit = farm_df['profit'].sum()
-    
-    col1.metric("Total Yield (Eggs)", f"{total_yield:,}")
-    col2.metric("Gross Revenue", f"€{total_rev:,.2f}")
-    col3.metric("Operational Cost", f"€{total_cost:,.2f}")
-    col4.metric("Net Profit (ROI)", f"€{net_profit:,.2f}", f"{(net_profit/total_cost*100):.1f}% Margin")
+    # Executive KPIs
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total Yield (Eggs)", f"{farm_df['eggs_laid'].sum():,}")
+    c2.metric("Gross Revenue", f"€{farm_df['revenue'].sum():,.2f}")
+    c3.metric("Operational Cost", f"€{farm_df['cost'].sum():,.2f}")
+    c4.metric("Net Profit (ROI)", f"€{farm_df['profit'].sum():,.2f}")
     st.divider()
 
-    tab_dash, tab_crud = st.tabs(["📈 Visual Analytics & Forecast", "🗄️ Farm Configuration (CRUD)"])
+    # The 3 Enterprise Tabs
+    tab_dash, tab_crud, tab_ai = st.tabs(["📈 Visual Analytics", "🗄️ Farm Config & QR Codes", "🤖 AI Copilot"])
 
     with tab_dash:
-        # --- High-Density Grid Layout ---
         row1_col1, row1_col2 = st.columns([2, 1])
-        
         with row1_col1:
             st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
             st.subheader("🤖 30-Day AI Forecast with Confidence Intervals")
             forecast_df = generate_30_day_forecast(farm_df)
-            
             fig_fc = go.Figure()
-            # Historical
-            fig_fc.add_trace(go.Scatter(x=farm_df['date'], y=farm_df['eggs_laid'], name='Historical', line=dict(color='#0f172a', width=2)))
-            
+            fig_fc.add_trace(go.Scatter(x=farm_df['date'], y=farm_df['eggs_laid'], name='Historical', line=dict(color='#0f172a')))
             if not forecast_df.empty:
-                # Confidence Interval Shading
                 fig_fc.add_trace(go.Scatter(
                     x=pd.concat([forecast_df['date'], forecast_df['date'][::-1]]),
                     y=pd.concat([forecast_df['upper_bound'], forecast_df['lower_bound'][::-1]]),
-                    fill='toself', fillcolor='rgba(59, 130, 246, 0.2)', line=dict(color='rgba(255,255,255,0)'),
-                    hoverinfo="skip", showlegend=True, name='95% Confidence Interval'
+                    fill='toself', fillcolor='rgba(59, 130, 246, 0.2)', line=dict(color='rgba(255,255,255,0)'), name='95% CI'
                 ))
-                # Forecast Line
-                fig_fc.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['predicted_eggs'], name='AI Prediction', line=dict(color='#3b82f6', width=3, dash='dot')))
-            
-            fig_fc.update_layout(template="plotly_white", hovermode="x unified", height=400, margin=dict(l=0, r=0, t=30, b=0))
+                fig_fc.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['predicted_eggs'], name='AI Prediction', line=dict(color='#3b82f6', dash='dot')))
+            fig_fc.update_layout(template="plotly_white", margin=dict(l=0, r=0, t=30, b=0))
             st.plotly_chart(fig_fc, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -133,59 +149,77 @@ def main():
             st.subheader("🧬 Breed Distribution")
             breed_dist = farm_df.groupby('breed')['eggs_laid'].sum().reset_index()
             fig_donut = px.pie(breed_dist, names='breed', values='eggs_laid', hole=0.6, color_discrete_sequence=px.colors.sequential.Blues_r)
-            fig_donut.update_layout(height=400, margin=dict(l=0, r=0, t=30, b=0))
+            fig_donut.update_layout(margin=dict(l=0, r=0, t=30, b=0))
             st.plotly_chart(fig_donut, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-        st.write("") # Spacer
-        
         row2_col1, row2_col2 = st.columns([1, 2])
-        
         with row2_col1:
             st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
             st.subheader("🧠 Prescriptive Actions")
             insights = generate_prescriptive_insights(selected_farm, farm_df.iloc[-1]['barn_temp_c'] if not farm_df.empty else 20, forecast_df)
-            for insight in insights:
-                st.info(insight)
+            for insight in insights: st.info(insight)
             st.markdown("</div>", unsafe_allow_html=True)
 
         with row2_col2:
             st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-            st.subheader("🔥 Production Heatmap (Efficiency by Temp/Age)")
-            # Adding Heatmap for Data Density
+            st.subheader("🔥 Production Heatmap")
             fig_heat = px.density_heatmap(farm_df, x="age_days", y="barn_temp_c", z="eggs_laid", histfunc="avg", color_continuous_scale="Viridis")
-            fig_heat.update_layout(height=300, margin=dict(l=0, r=0, t=30, b=0))
+            fig_heat.update_layout(margin=dict(l=0, r=0, t=30, b=0))
             st.plotly_chart(fig_heat, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
     with tab_crud:
-        st.subheader("🗄️ Database Management & Fleet Settings")
+        st.subheader("Farm Database & Cost Overrides")
         conn = get_db_connection()
         farms = pd.read_sql_query("SELECT * FROM farms_profile", conn)
-        
-        # Visually appealing CRUD Cards instead of raw dataframes
         crud_cols = st.columns(3)
         for idx, row in farms.iterrows():
             with crud_cols[idx % 3]:
-                st.markdown(f"""
-                <div class='crud-card'>
-                    <h3>🏢 {row['farm_name']}</h3>
-                    <p><b>Current Breed:</b> {row['optimal_breed']}</p>
-                    <p><b>HVAC System:</b> {row['heating_type']}</p>
-                    <p><b>Feed Cost:</b> €{row['ovr_feed_cost']:.2f} / day</p>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Streamlit Form for Data Integrity
+                st.markdown(f"<div class='crud-card'><h3>🏢 {row['farm_name']}</h3><p><b>Breed:</b> {row['optimal_breed']}</p><p><b>HVAC:</b> {row['heating_type']}</p></div>", unsafe_allow_html=True)
                 with st.form(key=f"form_{row['farm_id']}"):
-                    new_cost = st.number_input("Update Feed Cost (€)", min_value=0.01, max_value=5.00, value=float(row['ovr_feed_cost']), step=0.01)
-                    if st.form_submit_button("💾 Save to DB"):
+                    new_cost = st.number_input("Feed Cost (€)", value=float(row['ovr_feed_cost']), step=0.01)
+                    if st.form_submit_button("Update DB"):
                         cur = conn.cursor()
                         cur.execute("UPDATE farms_profile SET ovr_feed_cost = ? WHERE farm_id = ?", (new_cost, row['farm_id']))
                         conn.commit()
-                        st.success("Database Updated! Refreshing...")
+                        st.success("Updated!")
                         st.rerun()
+        
+        st.divider()
+        st.subheader("📱 Supply Chain: Generate Traceability QR Code")
+        batches = pd.read_sql_query("SELECT batch_id, farm_id FROM livestock_batches", conn)
+        if not batches.empty:
+            selected_batch = st.selectbox("Select Production Batch to Generate Label", batches['batch_id'])
+            app_url = "https://waar-is-de-kip.streamlit.app/" 
+            passport_link = f"{app_url}?batch_id={selected_batch}"
+            
+            qr = qrcode.QRCode(version=1, box_size=5, border=2)
+            qr.add_data(passport_link)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buf = BytesIO()
+            img.save(buf, format="PNG")
+            
+            col_qr1, col_qr2 = st.columns([1, 3])
+            with col_qr1: st.image(buf.getvalue(), caption="Ready for Print")
+            with col_qr2: 
+                st.write("**Digital Passport Link:**")
+                st.code(passport_link, language="html")
         conn.close()
+
+    with tab_ai:
+        st.subheader("💬 Operations Copilot (RAG Interface)")
+        st.warning("🔒 Copilot has access to internal SQL logs, financial models, and HVAC telemetry.")
+        admin_q = st.text_input("Ask Copilot...", placeholder="How can I optimize heating in Lommel?")
+        if admin_q: st.markdown(f"<div class='chat-bubble'><b>Copilot:</b> {admin_copilot(admin_q)}</div>", unsafe_allow_html=True)
+
+def main():
+    query_params = st.query_params
+    if "batch_id" in query_params:
+        render_consumer_passport(query_params["batch_id"])
+    else:
+        render_admin_dashboard()
 
 if __name__ == "__main__":
     main()
