@@ -9,20 +9,6 @@ import plotly.graph_objects as go
 from advanced_ml import generate_30_day_forecast, generate_prescriptive_insights
 
 # 1. Page Configuration & CSS
-st.set_page_config(page_title="Waar is de kip! | Enterprise", layout="wide", page_icon="🐓")
-st.markdown("""
-    <style>
-    st.markdown("""
-    <style>
-    /* Compact layout styling */
-    .stApp { max-width: 1400px; margin: 0 auto; }
-    .chart-container { 
-        background-color: #FFFFFF; 
-        padding: 10px; 
-        border-radius: 8px; 
-        border: 1px solid #E5E7EB; 
-        margin-bottom: 10px; 
-    }
     </style>
     """, unsafe_allow_html=True)
     .main { background-color: #F4F6F9; }
