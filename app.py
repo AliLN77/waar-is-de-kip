@@ -14,15 +14,13 @@ st.markdown("""
     <style>
     st.markdown("""
     <style>
-    /* Compact layout styling */
+    .main { background-color: #F4F6F9; }
+    .stMetric { background-color: #FFFFFF; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #0f172a; }
+    .crud-card { background-color: #FFFFFF; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 4px solid #3b82f6; }
+    .chart-container { background-color: #FFFFFF; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
     .stApp { max-width: 1400px; margin: 0 auto; }
-    .chart-container { 
-        background-color: #FFFFFF; 
-        padding: 10px; 
-        border-radius: 8px; 
-        border: 1px solid #E5E7EB; 
-        margin-bottom: 10px; 
-    }
+    </style>
+    """, unsafe_allow_html=True)
     </style>
     """, unsafe_allow_html=True)
     .main { background-color: #F4F6F9; }
