@@ -9,7 +9,10 @@ import plotly.graph_objects as go
 from advanced_ml import generate_30_day_forecast, generate_prescriptive_insights
 
 # 1. Page Configuration & CSS
-    </style>
+    </style>File "/mount/src/waar-is-de-kip/app.py", line 12
+      </style>
+     ^
+IndentationError: unexpected indent
     """, unsafe_allow_html=True)
     .main { background-color: #F4F6F9; }
     .stMetric { background-color: #FFFFFF; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #0f172a; }
@@ -18,11 +21,7 @@ from advanced_ml import generate_30_day_forecast, generate_prescriptive_insights
     .chat-bubble { background-color: #e0f2fe; padding: 15px; border-radius: 10px; border-left: 5px solid #0284c7; margin-bottom: 10px; }
     .passport-card { background-color: #f0fdf4; padding: 20px; border-radius: 15px; border: 2px solid #22c55e; text-align: center; }
     </style>
-    """, unsafe_allow_html=True)File "/mount/src/waar-is-de-kip/app.py", line 12
-      </style>
-     ^
-IndentationError: unexpected indent
-
+    """, unsafe_allow_html=True)
 COST_PER_CHICKEN = 0.05
 REVENUE_PER_EGG = 0.25
 
