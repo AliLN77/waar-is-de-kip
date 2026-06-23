@@ -121,7 +121,7 @@ def render_admin_dashboard():
         min_d, max_d = df['date'].min(), df['date'].max()
         date_range = st.date_input("Filter Range", [min_d, max_d], min_value=min_d, max_value=max_d)
         st.success("🟢 AI Engine: Active")
-        st.divider)
+        st.divider
     st.subheader("📡 System Health")
     st.write("Database: ✅ Operational (12ms)")
     st.write("AI Pipeline: 🟢 Stable")
