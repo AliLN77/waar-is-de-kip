@@ -9,16 +9,16 @@ import plotly.graph_objects as go
 from advanced_ml import generate_30_day_forecast, generate_prescriptive_insights
 
 # 1. Page Configuration & CSS
-st.set_page_config(page_title="Waar is de kip! | Enterprise", layout="wide", page_icon="🐓")
+# این بخش را دقیقاً به همین شکل در ابتدای فایل جایگزین کن:
 st.markdown("""
-    <style>
-    st.markdown("""
     <style>
     .main { background-color: #F4F6F9; }
     .stMetric { background-color: #FFFFFF; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #0f172a; }
     .crud-card { background-color: #FFFFFF; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 4px solid #3b82f6; }
-    .chart-container { background-color: #FFFFFF; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .chart-container { background-color: #FFFFFF; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 10px; }
     .stApp { max-width: 1400px; margin: 0 auto; }
+    </style>
+    """, unsafe_allow_html=True)
     </style>
     """, unsafe_allow_html=True)
     </style>
